@@ -12,6 +12,7 @@ def get_average_color(im):
         print(im.format, im.mode)
         print("Big problem!")
 
+
 def luminance(im):
     """Gets the perceived luminance of the given color."""
     r, g, b = get_average_color(im)
