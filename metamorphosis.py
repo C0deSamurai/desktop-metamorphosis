@@ -10,9 +10,9 @@ from sorter import sort
 
 SWITCH_DELAY = 1  # in minutes
 NUM_GROUPS = 6
-IMAGE_DIR = "/home/nicholas/Pictures/abstract-backgrounds"
+IMAGE_DIR = Path.cwd().joinpath("test")
 IMAGE_FILETYPES = ("png", "jpg")
-if not os.path.exists("{}/sorted.txt".format(IMAGE_DIR)):
+if not os.path.exists("{}/sorted-images/sorted.txt".format(IMAGE_DIR)):
     sort(IMAGE_DIR, IMAGE_FILETYPES, NUM_GROUPS)
 
 
@@ -26,18 +26,15 @@ if now.minute % SWITCH_DELAY == 0:  # time to switch
     brightness = int(get_brightness(now.hour) + 1)
     print(brightness)
     # get a random file from that directory
-    new_background = choice(list(Path("{}/sorted-{}".format(IMAGE_DIR, brightness)).iterdir()))
+    new_background = choice(list(Path("{}/sorted-images/sorted-{}".format(IMAGE_DIR,
+                                                                          brightness)).iterdir()))
     # if 0 or 1 files in the directory, choose randomly from whole directory
-    if len(list(Path("{}/sorted-{}".format(IMAGE_DIR, brightness)).iterdir())) <= 1:
+    if len(list(Path("{}/sorted-images/sorted-{}".format(IMAGE_DIR, brightness)).iterdir())) <= 1:
         new_background = choice(list(Path(IMAGE_DIR).iterdir()))
+
     print(new_background)
-    # set it as background
-    # try:
-    #     subprocess.call("gsettings set org.gnome.desktop.background picture-uri {}".format(
-    #         new_background.as_uri()))
-    # except:  # anything at all
-    #     print("Whoops!")
-    #     pass  # don't want to mess anything up
+    print("{}/sorted-images/sorted-{}".format(IMAGE_DIR, brightness))
+    
     subprocess.call("gsettings set org.gnome.desktop.background picture-uri {}".format(
         new_background.as_uri()), shell=True)
 print(now.hour, now.minute, now.second)
