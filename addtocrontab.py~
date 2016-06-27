@@ -1,0 +1,2 @@
+"""This file adds a command into the crontab file of either the user or the system, as appropriate,
+pointing to the morph.sh file which will change the desktop background."""

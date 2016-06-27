@@ -25,8 +25,8 @@ def configure_from_file():
         # Warning: what lies ahead is hacky as fuck. But code repetition sucks, and Python lets me!
         defaults = ["DEFAULT_IMAGE_DIR", "DEFAULT_NUM_GROUPS",
                     "DEFAULT_IMAGE_FILETYPES", "SWITCH_DELAY"]
-        for i, setting in enumerate(("ImageDirectory", "NumSortingGroups",
-                                     "ImageFiletypes", "ChangeDelay")):
+        for i, setting in enumerate(("imagedirectory", "numsortinggroups",
+                                     "imagefiletypes", "changedelay")):
             if setting in settings:
                 globals()[defaults[i]] = settings[setting]
 
@@ -36,13 +36,14 @@ def configure_from_file():
         globals()["DEFAULT_NUM_GROUPS"] = int(DEFAULT_NUM_GROUPS)  # ditto
 
 
-def get_brightness(hour, num_groups):
+def get_brightness(hour, num_groups=DEFAULT_NUM_GROUPS):
     """Gets a fudged value between 1 and num_groups for the brightness outside right now."""
     return (12 - abs(hour-12)) * num_groups / 12  # told you it was fudged
 
 
-def main(im_dir, im_filetypes, num_sorting_groups, delay=SWITCH_DELAY):
-    if not Path(("{}/sorted-images/sorted.txt".format(im_dir))).exists():
+def main(im_dir=DEFAULT_IMAGE_DIR, im_filetypes=DEFAULT_IMAGE_FILETYPES,
+         num_sorting_groups=DEFAULT_NUM_GROUPS, delay=SWITCH_DELAY):
+    if not Path(("{}/sorted-images/.sorted".format(im_dir))).exists():
         sort(im_dir, im_filetypes, num_sorting_groups)
 
     now = datetime.datetime.now()
@@ -56,15 +57,15 @@ def main(im_dir, im_filetypes, num_sorting_groups, delay=SWITCH_DELAY):
             new_background = choice(list(Path(im_dir).iterdir()))
 
         # get a random file from that directory
-        new_background = choice(list(Path("{}/sorted-images/sorted-{}".format(im_dir,
-                                                                          brightness)).iterdir()))
+        new_background = choice(list(Path("{}/sorted-images/sorted-{}".format(
+            im_dir, brightness)).iterdir()))
 
-        print(new_background)
+        # print(new_background)
 
         subprocess.call("gsettings set org.gnome.desktop.background picture-uri {}".format(
             new_background.resolve().as_uri()), shell=True)
     print(now.hour, now.minute, now.second)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # what happens next is a shocker!
     main()
