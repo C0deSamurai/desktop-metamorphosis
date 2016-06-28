@@ -46,7 +46,7 @@ def main(im_dir=DEFAULT_IMAGE_DIR, im_filetypes=DEFAULT_IMAGE_FILETYPES,
     now = datetime.datetime.now()
     if now.minute % delay == 0:  # time to switch
         # select a random image from the correct directory
-        brightness = int(get_brightness(now.hour) + 1)
+        brightness = int(get_brightness(now.hour, num_sorting_groups) + 1)
         # print(brightness)
 
         # if 0 or 1 files in the directory, choose randomly from whole directory
