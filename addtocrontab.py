@@ -1,7 +1,14 @@
 """This file adds a command into the crontab file pointing to the morph.sh file which will change
 the desktop background."""
 
+from configparser import ConfigParser
 from pathlib import Path
+
+
+def get_owner():
+    config = ConfigParser()
+    config.read("config.ini")
+    return config["SETTINGS"]["owner"]
 
 
 def add_to_crontab():
@@ -14,8 +21,9 @@ def add_to_crontab():
     script_dir = Path(__file__).parent
     try:  # often there might be permission errors
         with open("/etc/crontab", 'a') as crontab:
-            crontab.write("\n* * * * * root bash {} >> {}\n".format(
-                script_dir.joinpath("morph.sh"), script_dir.joinpath("metamorphosislog")))
+            crontab.write("\n* * * * * {} bash {} >> {}\n".format(
+                get_owner(), script_dir.joinpath("morph.sh"),
+                script_dir.joinpath("metamorphosislog")))
     except PermissionError:
         return 65
 

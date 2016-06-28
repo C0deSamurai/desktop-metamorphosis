@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from mainui import Ui_Dialog
 from pathlib import Path
 from addtocrontab import add_to_crontab
-from sorter import sort
+import sorter
 import configparser
 import sys
 
@@ -56,19 +56,29 @@ class MainProgram(Ui_Dialog):
         else:
             return any([str(imagefile)[-3:] in IM_FILETYPES for imagefile in p.iterdir()])
 
-    def custom_accept(self, just_config=False):
-        """Does some input checking and does the dirty work. If just_config is True, do not add to
-        crontab."""
+    def must_resort(self):
+        """Returns True if sorted-images does not exist or has the wrong number of directories."""
+        sorted_dir = Path(self.imageDirectoryLineEdit.text()).joinpath("sorted-images")
+        if not sorted_dir.exists():
+            return True
+        else:
+            # subtract 1 to account for the .sorted file
+            if (len(list(sorted_dir.iterdir())) - 1) != self.numberGroupsSpinBox.value():
+                return True
+            else:
+                return False
+
+    def custom_accept(self):
+        """Does some input checking and does the dirty work."""
         if not self.is_valid_path(Path(self.imageDirectoryLineEdit.text())):  # invalid folder
             self.no_selected_directory()  # tell the user
             # do not pass to Ui_Dialog.accept()
             return False
         else:
             self.configure_script()  # note that this sets the variables we'll use to call sort()
-            if not Path(self.imageDirectoryLineEdit.text()).joinpath(
-                    "sorted-images").exists():
-                sort(use_gui=True)
-            if not just_config:
+            if self.must_resort():
+                sorter.sort(use_gui=True)  # use GUI when sorting
+            if not self.added_to_crontab():
                 if self.crontab_configure() != 0:  # Houston, we have a problem
                     self.accept()  # quit
                     return False  # don't show msgbox
@@ -110,14 +120,27 @@ class MainProgram(Ui_Dialog):
     def crontab_configure(self):
         code = add_to_crontab()
         if code == 0:  # success!
-            return None  # quit
+            pass  # hold on for now, wait to add data to config.ini
         elif code == 64:  # /etc/crontab not found
             self.show_error_message("/etc/crontab not found")
         elif code == 65:  # permissions errors
             self.show_error_message("Permission denied. Are you root?")
         elif code == 1:  # we don't even know
             self.show_error_message("An unknown error occurred. Good luck!")
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        config["SETTINGS"]["crontab"] = str(code)
+        with open("config.ini", 'w') as configfile:
+            config.write(configfile)
         return code
+
+    def added_to_crontab(self):
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        if "crontab" not in config["SETTINGS"] or config["SETTINGS"]["crontab"] != 0:
+            return False
+        else:
+            return True
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

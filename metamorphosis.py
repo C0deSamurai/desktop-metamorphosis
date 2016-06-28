@@ -14,26 +14,20 @@ DEFAULT_IMAGE_DIR = Path(__file__).parent.joinpath("test")
 DEFAULT_IMAGE_FILETYPES = ("png", "jpg")
 
 
-def configure_from_file():
-    """Takes the config.ini file, if it exists, and modifies the settings to that file"""
-    if not Path.exists(Path(__file__).parent.joinpath("config.ini")):  # move along people
-        return None
-    else:
-        config = configparser.ConfigParser()
-        config.read("config.ini")
-        settings = config["SETTINGS"]
-        # Warning: what lies ahead is hacky as fuck. But code repetition sucks, and Python lets me!
-        defaults = ["DEFAULT_IMAGE_DIR", "DEFAULT_NUM_GROUPS",
-                    "DEFAULT_IMAGE_FILETYPES", "SWITCH_DELAY"]
-        for i, setting in enumerate(("imagedirectory", "numsortinggroups",
-                                     "imagefiletypes", "changedelay")):
-            if setting in settings:
-                globals()[defaults[i]] = settings[setting]
-
-        globals()["DEFAULT_IMAGE_DIR"] = Path(DEFAULT_IMAGE_DIR)  # this would otherwise be a string
-        globals()["SWITCH_DELAY"] = int(SWITCH_DELAY)  # this would otherwise be a string
-        globals()["DEFAULT_IMAGE_FILETYPES"] = tuple(DEFAULT_IMAGE_FILETYPES.split())  # ditto
-        globals()["DEFAULT_NUM_GROUPS"] = int(DEFAULT_NUM_GROUPS)  # ditto
+def get_settings_from_config():
+    """Gets the settings from config.ini and returns a list:
+    [imagedirectory, imagefiletypes, numsortinggroups, changedelay]"""
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    print(config.sections())
+    settings = config["SETTINGS"]
+    settingslist = []
+    for key in "imagedirectory imagefiletypes numsortinggroups changedelay".split():
+        settingslist.append(settings[key])
+    settingslist[0] = Path(settingslist[0])  # make a Path not a string
+    settingslist[2] = int(settingslist[2])  # make an int not a string
+    settingslist[3] = int(settingslist[3])  # ditto
+    return settingslist
 
 
 def get_brightness(hour, num_groups=DEFAULT_NUM_GROUPS):
@@ -42,7 +36,10 @@ def get_brightness(hour, num_groups=DEFAULT_NUM_GROUPS):
 
 
 def main(im_dir=DEFAULT_IMAGE_DIR, im_filetypes=DEFAULT_IMAGE_FILETYPES,
-         num_sorting_groups=DEFAULT_NUM_GROUPS, delay=SWITCH_DELAY):
+         num_sorting_groups=DEFAULT_NUM_GROUPS, delay=SWITCH_DELAY, config_from_file=True):
+    if config_from_file:
+        im_dir, im_filetypes, num_sorting_groups, delay = get_settings_from_config()
+
     if not Path(("{}/sorted-images/.sorted".format(im_dir))).exists():
         sort(im_dir, im_filetypes, num_sorting_groups)
 
