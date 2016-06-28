@@ -18,7 +18,7 @@ def get_settings_from_config():
     """Gets the settings from config.ini and returns a list:
     [imagedirectory, imagefiletypes, numsortinggroups, changedelay]"""
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read(str(Path(__file__).parent.joinpath("config.ini").resolve()))
     print(config.sections())
     settings = config["SETTINGS"]
     settingslist = []
