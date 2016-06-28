@@ -13,7 +13,7 @@ import configparser
 import sys
 
 
-IM_FILETYPES = ("png", "jpg")  # yeah yeah yeah hardcoding evil blah blah blah
+IM_FILETYPES = ("png", "jpg", "jpeg")  # yeah yeah yeah hardcoding evil blah blah blah
 
 
 def get_users():
