@@ -1,2 +1,2 @@
-all:
-	bash morph.sh
+install:
+	bash install.sh
